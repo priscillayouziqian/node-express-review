@@ -5,14 +5,58 @@ const hostname = 'localhost';
 const port = 3000;
 
 const app = express();
-app.use(morgan('dev')); //insert morgan middleware function in .use()
+app.use(morgan('dev'));
+app.use(express.json());
 
-// set up express to serve files in the public folder, use express.static()
-// __dirname means special variable in node, refers to absollute path of current directory
+// routing method, app.all(), catch all for all http verbs
+app.all('/campsites', (req, res, next) => {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/plain');
+    next(); //pass control of the application routing to next relevent routing method after this one. Ohterise, it will stop here and not going any further
+});
+
+//set up an endpoint of /campsites
+app.get('/campsites', (req, res) => {
+    // because app.all() has already set the res.statusCode and setHeader, no need to set again.
+    res.end('Will send all the campsites to you'); //plain text is for testing 
+});
+
+app.post('/campsites', (req, res) => {
+    res.end(`Will add the campsite: ${req.body.name} with description: ${req.body.description}`);
+});
+
+app.put('/campsites', (req, res) => {
+    res.statusCode = 403; //403: operation is not supported
+    res.end('PUT operation not supported on /campsites');
+});
+
+app.delete('/campsites', (req, res) => {
+    res.end('Deleting all campsites');
+});
+
+app.get('/campsites/:campsiteId', (req, res) => {
+    res.end(`Will send details of the campsite: ${req.params.campsiteId} to you`);
+});
+
+app.post('/campsites/:campsiteId', (req, res) => {
+    res.statusCode = 403;
+    res.end(`POST operation not supported on /campsites/${req.params.campsiteId}`);
+});
+
+app.put('/campsites/:campsiteId', (req, res) => {
+    // .write the body
+    res.write(`Updating the campsite: ${req.params.campsiteId}\n`); 
+    res.end(`Will update the campsite: ${req.body.name}
+        with description: ${req.body.description}`);
+});
+
+app.delete('/campsites/:campsiteId', (req, res) => {
+    res.end(`Deleting campsite: ${req.params.campsiteId}`);
+});
+
 app.use(express.static(__dirname + '/public'));
 
 app.use((req, res) => {
-    // console.log(req.headers); //delete this console.log because morgan will handle it
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/html');
     res.end('<html><body><h1>This is an Express Server</h1></body></html>');
